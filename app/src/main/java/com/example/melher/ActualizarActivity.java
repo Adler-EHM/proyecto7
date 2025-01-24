@@ -1,99 +1,97 @@
 package com.example.melher;
 
-import android.annotation.SuppressLint;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
-import org.json.JSONObject;
-
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
 public class ActualizarActivity extends AppCompatActivity {
 
-    private EditText etIdActualizar, etNuevoNombre, etNuevaEdad; // Agrega más EditText si es necesario
+    private EditText editTextId, editTextNombre, editTextEmail, editTextTelefono, editTextDireccion;
+    private Button buttonActualizar, buttonRegresar;
 
-    @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_actualizar);
 
-        etIdActualizar = findViewById(R.id.editText_id_actualizar); // Reemplaza con el ID de tu EditText
-        etNuevoNombre = findViewById(R.id.editText_nuevo_nombre); // Reemplaza con el ID de tu EditText
-        etNuevaEdad = findViewById(R.id.editText_nueva_edad); // Reemplaza con el ID de tu EditText
-        // Obtén las referencias a otros EditText si es necesario
+        // Asignar las vistas
+        editTextId = findViewById(R.id.editText_id_actualizar);
+        editTextNombre = findViewById(R.id.editText_nuevo_nombre);
+        editTextEmail = findViewById(R.id.editText_nuevo_email);
+        editTextTelefono = findViewById(R.id.editText_nuevo_telefono);
+        editTextDireccion = findViewById(R.id.editText_nueva_direccion);
+        buttonActualizar = findViewById(R.id.button_actualizar);
+        buttonRegresar = findViewById(R.id.regresar);
 
-        Button btnActualizar = findViewById(R.id.button_actualizar); // Reemplaza con el ID de tu Button
-        btnActualizar.setOnClickListener(view -> {
-            String idActualizar = etIdActualizar.getText().toString().trim();
-            String nuevoNombre = etNuevoNombre.getText().toString().trim();
-            String nuevaEdad = etNuevaEdad.getText().toString().trim();
-            // Obtén los valores de otros EditText si es necesario
+        // Botón regresar
+        buttonRegresar.setOnClickListener(v -> finish());
 
-            actualizarUsuario(idActualizar, nuevoNombre, nuevaEdad); // Agrega más parámetros si es necesario
-        });
-
-        Button btn_regresar = findViewById(R.id.regresar);
-        btn_regresar.setOnClickListener(view -> {
-            finish();
-        });
-
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
+        // Botón actualizar
+        buttonActualizar.setOnClickListener(v -> actualizarCliente());
     }
 
-    private void actualizarUsuario(String idActualizar, String nuevoNombre, String nuevaEdad) { // Agrega más parámetros si es necesario
+    private void actualizarCliente() {
+        // Obtener los valores de los EditText
+        String id = editTextId.getText().toString().trim();
+        String nombre = editTextNombre.getText().toString().trim();
+        String email = editTextEmail.getText().toString().trim();
+        String telefono = editTextTelefono.getText().toString().trim();
+        String direccion = editTextDireccion.getText().toString().trim();
+
+        // Verificar que los campos no estén vacíos
+        if (id.isEmpty() || nombre.isEmpty() || email.isEmpty() || telefono.isEmpty() || direccion.isEmpty()) {
+            Toast.makeText(this, "Por favor, completa todos los campos", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Realizar la solicitud HTTP en un hilo aparte para no bloquear la UI
         new Thread(() -> {
             try {
-                // 1. URL del endpoint de actualización
-                URL url = new URL("http://10.0.2.2/actualizar.php"); // Reemplaza con la URL de tu endpoint
-
-                // 2. Crear la conexión
+                // URL de tu script PHP
+                String urlString = "http://10.0.2.2/actualizar_cliente.php"; // Cambia esto si es necesario
+                URL url = new URL(urlString);
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setRequestMethod("POST"); // O el método que use tu API
-                conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+                conn.setRequestMethod("POST");
+                conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
                 conn.setDoOutput(true);
 
-                // 3. Datos a enviar
-                JSONObject json = new JSONObject();
-                json.put("id", idActualizar); // Envía el ID del cliente a actualizar
-                json.put("nombre", nuevoNombre); // Envía el nuevo nombre
-                json.put("edad", nuevaEdad); // Envía la nueva edad
-                // Agrega más campos al JSON si es necesario
+                // Crear el cuerpo de la solicitud
+                String postData = "id=" + id + "&nombre=" + nombre + "&email=" + email + "&telefono=" + telefono + "&direccion=" + direccion;
 
-                // 4. Enviar los datos
+                // Escribir los datos en la conexión
                 OutputStream os = conn.getOutputStream();
-                os.write(json.toString().getBytes("UTF-8"));
+                os.write(postData.getBytes());
                 os.close();
 
-                // 5. Leer la respuesta
-                int responseCode = conn.getResponseCode();
-                if (responseCode == HttpURLConnection.HTTP_OK) {
-                    runOnUiThread(() -> {
-                        Toast.makeText(this, "Cliente actualizado exitosamente", Toast.LENGTH_SHORT).show();
-                        // Puedes realizar alguna otra acción después de la actualización
-                        // Por ejemplo, finish() para cerrar la actividad actual
-                        finish();
-                    });
-                } else {
-                    runOnUiThread(() -> Toast.makeText(this, "Error al actualizar el cliente", Toast.LENGTH_SHORT).show());
+                // Leer la respuesta
+                BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                StringBuilder response = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    response.append(line);
                 }
+                reader.close();
 
-                // 6. Cerrar la conexión
+                // Procesar la respuesta (JSON)
+                String responseStr = response.toString();
+                runOnUiThread(() -> {
+                    if (responseStr.contains("success\":true")) {
+                        Toast.makeText(this, "Cliente actualizado con éxito", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(this, "Error al actualizar cliente", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
                 conn.disconnect();
             } catch (Exception e) {
                 e.printStackTrace();

@@ -6,16 +6,17 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".ActualizarActivity">
+
+    <!-- Titulo de la pantalla -->
     <TextView
         android:id="@+id/textView4"
         android:layout_width="match_parent"
         android:layout_height="70dp"
         android:background="@color/lightblue"
         android:gravity="center"
-        android:text="ACTUALIZAR CLIENTES"
+        android:text="ACTUALIZAR CLIENTE"
         android:textColor="@color/black"
         android:textSize="35sp"
-
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
@@ -23,14 +24,13 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.0" />
 
+    <!-- Titulo de la tabla -->
     <TextView
         android:id="@+id/textv_tabla"
         android:layout_width="300dp"
         android:layout_height="50dp"
-        android:text="TABLA DE CLIENTES"
-        android:textSize="30sp"
-
-
+        android:text="ACTUALIZAR CLIENTE"
+        android:textSize="28sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.496"
@@ -38,43 +38,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.267" />
 
-    <LinearLayout
-        android:id="@+id/linearLayout"
-        android:layout_width="300dp"
-
-        android:layout_height="300dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="@+id/textv_tabla"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="@+id/textv_tabla"
-        app:layout_constraintTop_toBottomOf="@+id/textv_tabla"
-        app:layout_constraintVertical_bias="0.0" />
-
-    <Button
-        android:id="@+id/regresar"
-        android:layout_width="150dp"
-        android:layout_height="40dp"
-        android:text="REGRESAR"
-
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.114" />
-
-    <Button
-
-        android:layout_width="200dp"
-        android:layout_height="50dp"
-        android:text="ACTUALIZAR"
-
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/linearLayout"
-        app:layout_constraintVertical_bias="0.503" />
+    <!-- Campo para ingresar el ID del cliente -->
     <EditText
         android:id="@+id/editText_id_actualizar"
         android:layout_width="0dp"
@@ -88,6 +52,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textv_tabla" />
 
+    <!-- Campo para ingresar el nuevo nombre -->
     <EditText
         android:id="@+id/editText_nuevo_nombre"
         android:layout_width="0dp"
@@ -100,19 +65,48 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/editText_id_actualizar" />
 
+    <!-- Campo para ingresar el nuevo email -->
     <EditText
-        android:id="@+id/editText_nueva_edad"
+        android:id="@+id/editText_nuevo_email"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="16dp"
-        android:hint="Nueva edad"
-        android:inputType="number"
+        android:hint="Nuevo email"
+        android:inputType="textEmailAddress"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/editText_nuevo_nombre" />
 
+    <!-- Campo para ingresar el nuevo teléfono -->
+    <EditText
+        android:id="@+id/editText_nuevo_telefono"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="16dp"
+        android:hint="Nuevo teléfono"
+        android:inputType="phone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/editText_nuevo_email" />
+
+    <!-- Campo para ingresar la nueva dirección -->
+    <EditText
+        android:id="@+id/editText_nueva_direccion"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="16dp"
+        android:hint="Nueva dirección"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/editText_nuevo_telefono" />
+
+    <!-- Botón para actualizar -->
     <Button
         android:id="@+id/button_actualizar"
         android:layout_width="wrap_content"
@@ -121,6 +115,19 @@
         android:text="Actualizar"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/editText_nueva_edad" />
+        app:layout_constraintTop_toBottomOf="@+id/editText_nueva_direccion" />
+
+    <!-- Botón para regresar -->
+    <Button
+        android:id="@+id/regresar"
+        android:layout_width="150dp"
+        android:layout_height="40dp"
+        android:text="REGRESAR"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.114" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

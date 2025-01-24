@@ -13,79 +13,108 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
 public class EliminarActivity extends AppCompatActivity {
 
-    private EditText etIdEliminar;
+    private EditText editTextIdEliminar;
+    private Button buttonEliminar;
+    private Button buttonRegresar;
 
-    @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_eliminar);
 
-        etIdEliminar = findViewById(R.id.editText_id_eliminar); // Reemplaza con el ID de tu EditText
-        Button btnEliminar = findViewById(R.id.button_eliminar); // Reemplaza con el ID de tu Button
+        // Inicializa los elementos de la interfaz
+        editTextIdEliminar = findViewById(R.id.editText_id_eliminar);
+        buttonEliminar = findViewById(R.id.button_eliminar);
+        buttonRegresar = findViewById(R.id.regresar);
 
-        btnEliminar.setOnClickListener(view -> {
-            String idEliminar = etIdEliminar.getText().toString().trim();
-            eliminarUsuario(idEliminar);
-        });
+        // Configurar el botón "Eliminar"
+        buttonEliminar.setOnClickListener(v -> eliminarCliente());
 
-        Button btn_regresar = findViewById(R.id.regresar);
-        btn_regresar.setOnClickListener(view -> {
-            finish();
-        });
-
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
+        // Configurar el botón "Regresar"
+        buttonRegresar.setOnClickListener(v -> {
+            // Aquí puedes manejar lo que sucede cuando se presiona "Regresar"
+            // Por ejemplo, volver a la pantalla principal
+            finish();  // Termina la actividad actual
         });
     }
 
-    private void eliminarUsuario(String idEliminar) {
+    private void eliminarCliente() {
+        // Obtener el ID del cliente
+        String idCliente = editTextIdEliminar.getText().toString().trim();
+
+        // Verificar que el campo no esté vacío
+        if (idCliente.isEmpty()) {
+            Toast.makeText(this, "Por favor, ingresa un ID de cliente", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Realizar la solicitud HTTP en un hilo aparte para no bloquear la UI
         new Thread(() -> {
             try {
-                // 1. URL del endpoint de eliminación
-                URL url = new URL("http://10.0.2.2/eliminar.php"); // Reemplaza con la URL de tu endpoint
+                // URL del script PHP (cambia la dirección si es necesario)
+                String urlString = "http://10.0.2.2/eliminar_cliente.php";  // Cambia a la URL correcta si usas otro entorno
+                URL url = new URL(urlString);
 
-                // 2. Crear la conexión
+                // Configurar la conexión
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setRequestMethod("POST"); // O el método que use tu API
-                conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+                conn.setRequestMethod("POST");
+                conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
                 conn.setDoOutput(true);
 
-                // 3. Datos a enviar
-                JSONObject json = new JSONObject();
-                json.put("id", idEliminar); // Envía el ID del cliente a eliminar
+                // Cuerpo de la solicitud (parámetro id)
+                String postData = "id=" + idCliente;
 
-                // 4. Enviar los datos
+                // Escribir los datos en el flujo de salida
                 OutputStream os = conn.getOutputStream();
-                os.write(json.toString().getBytes("UTF-8"));
+                os.write(postData.getBytes());
                 os.close();
 
-                // 5. Leer la respuesta
-                int responseCode = conn.getResponseCode();
-                if (responseCode == HttpURLConnection.HTTP_OK) {
-                    runOnUiThread(() -> {
-                        Toast.makeText(this, "Cliente eliminado exitosamente", Toast.LENGTH_SHORT).show();
-                        // Puedes realizar alguna otra acción después de la eliminación
-                        // Por ejemplo, finish() para cerrar la actividad actual
-                        finish();
-                    });
-                } else {
-                    runOnUiThread(() -> Toast.makeText(this, "Error al eliminar el cliente", Toast.LENGTH_SHORT).show());
+                // Leer la respuesta del servidor
+                BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                StringBuilder response = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    response.append(line);
                 }
+                reader.close();
 
-                // 6. Cerrar la conexión
+                // Procesar la respuesta
+                String responseStr = response.toString();
+                runOnUiThread(() -> {
+                    try {
+                        JSONObject jsonResponse = new JSONObject(responseStr);
+                        boolean success = jsonResponse.getBoolean("success");
+                        String message = jsonResponse.getString("message");
+
+                        // Mostrar el mensaje de la respuesta
+                        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+
+                        if (success) {
+                            // Si la eliminación fue exitosa, puedes realizar otras acciones si es necesario
+                            // Por ejemplo, limpiar el campo de texto o cerrar la actividad
+                            editTextIdEliminar.setText("");  // Limpiar el campo de texto
+                        }
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        Toast.makeText(this, "Error al procesar la respuesta", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+                // Cerrar la conexión
                 conn.disconnect();
+
             } catch (Exception e) {
                 e.printStackTrace();
                 runOnUiThread(() -> Toast.makeText(this, "Error de conexión", Toast.LENGTH_SHORT).show());
