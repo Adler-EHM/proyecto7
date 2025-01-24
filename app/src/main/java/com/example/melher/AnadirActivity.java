@@ -1,126 +1,99 @@
 package com.example.melher;
 
-import android.annotation.SuppressLint;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
-import org.json.JSONObject;
-
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import android.annotation.SuppressLint;
-import android.os.Bundle;
-import android.widget.Button;
-import android.widget.Toast;
-
-import androidx.activity.EdgeToEdge;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
-
-import org.json.JSONObject;
-
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-    public class AnadirActivity extends AppCompatActivity {
+public class AnadirActivity extends AppCompatActivity {
 
+    private EditText editTextNombre, editTextEmail, editTextTelefono, editTextDireccion;
+    private Button buttonAnadir, buttonRegresar;
 
-        private EditText etUsername, etPassword, etNombre; // Declara los EditText
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_anadir);
 
-        @SuppressLint("MissingInflatedId")
-        @Override
-        protected void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-            EdgeToEdge.enable(this);
-            setContentView(R.layout.activity_anadir);
+        // Asignar vistas
+        editTextNombre = findViewById(R.id.editText_nombre);
+        editTextEmail = findViewById(R.id.editText_email);
+        editTextTelefono = findViewById(R.id.editText_telefono);
+        editTextDireccion = findViewById(R.id.editText_direccion);
+        buttonAnadir = findViewById(R.id.button_anadir);
+        buttonRegresar = findViewById(R.id.regresar);
 
-             // Obtén las referencias a los EditText
-                    etUsername = findViewById(R.id.editText_username); // Reemplaza con el ID de tu EditText para username
-            etPassword = findViewById(R.id.editText_password); // Reemplaza con el ID de tu EditText para password
-            etNombre = findViewById(R.id.editText_nombre); // Reemplaza con el ID de tu EditText para nombre
+        // Botón Regresar
+        buttonRegresar.setOnClickListener(v -> finish());
 
-            Button btnRegistrar = findViewById(R.id.button_registrar); // Reemplaza con el ID de tu botón de registro
-            btnRegistrar.setOnClickListener(view -> {
-                String username = etUsername.getText().toString().trim();
-                String password = etPassword.getText().toString().trim();
-                String nombre = etNombre.getText().toString().trim();
-
-                registrarUsuario(username, password, nombre);
-            });
-
-            Button btn_regresar = findViewById(R.id.regresar);
-            btn_regresar.setOnClickListener(view -> {
-                finish();
-            });
-
-            ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-                Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-                v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-                return insets;
-            });
-        }
-
-        private void registrarUsuario(java.lang.String username, java.lang.String password, java.lang.String nombre)
-        {
-            new Thread(() -> {
-                try {
-                    // 1. URL del endpoint de registro
-                    URL url = new URL("http://10.0.2.2/registrar.php"); // Reemplaza con la URL de tu endpoint
-
-                    // 2. Crear la conexión
-                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                    conn.setRequestMethod("POST");
-                    conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-                    conn.setDoOutput(true);
-
-                    // 3. Datos a enviar
-                    JSONObject json = new JSONObject();
-                    json.put("username", username);
-                    json.put("password", password);
-                    json.put("nombre", nombre); // Agrega otros datos del usuario si es necesario
-
-                    // 4. Enviar los datos
-                    OutputStream os = conn.getOutputStream();
-                    os.write(json.toString().getBytes("UTF-8"));
-                    os.close();
-
-                    // 5. Leer la respuesta
-                    int responseCode = conn.getResponseCode();
-                    if (responseCode == HttpURLConnection.HTTP_OK) {
-                        runOnUiThread(() -> {
-                            Toast.makeText(this, "Registro exitoso", Toast.LENGTH_SHORT).show();
-                            // Puedes navegar a otra actividad o realizar alguna otra acción después del registro
-                            // Por ejemplo, finish() para cerrar la actividad actual
-                            finish();
-                        });
-                    } else {
-                        runOnUiThread(() -> Toast.makeText(this, "Error al registrar", Toast.LENGTH_SHORT).show());
-                    }
-
-                    // 6. Cerrar la conexión
-                    conn.disconnect();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    runOnUiThread(() -> Toast.makeText(this, "Error de conexión", Toast.LENGTH_SHORT).show());
-                }
-            }).start();
-        }
-
-
-
+        // Botón Añadir
+        buttonAnadir.setOnClickListener(v -> anadirCliente());
     }
 
+    private void anadirCliente() {
+        // Obtener datos de los EditText
+        String nombre = editTextNombre.getText().toString().trim();
+        String email = editTextEmail.getText().toString().trim();
+        String telefono = editTextTelefono.getText().toString().trim();
+        String direccion = editTextDireccion.getText().toString().trim();
 
+        // Verificar que los campos no estén vacíos
+        if (nombre.isEmpty() || email.isEmpty() || telefono.isEmpty() || direccion.isEmpty()) {
+            Toast.makeText(this, "Por favor, completa todos los campos", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
+        // Realizar la solicitud HTTP
+        new Thread(() -> {
+            try {
+                String urlString = "http://10.0.2.2/anadir_cliente.php";  // Cambia la URL según tu servidor
+                URL url = new URL(urlString);
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("POST");
+                conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+                conn.setDoOutput(true);
+
+                // Crear el cuerpo de la solicitud
+                String postData = "nombre=" + nombre + "&email=" + email + "&telefono=" + telefono + "&direccion=" + direccion;
+
+                // Escribir los datos en la conexión
+                OutputStream os = conn.getOutputStream();
+                os.write(postData.getBytes());
+                os.close();
+
+                // Leer la respuesta
+                BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                StringBuilder response = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    response.append(line);
+                }
+                reader.close();
+
+                // Procesar la respuesta
+                String responseStr = response.toString();
+                runOnUiThread(() -> {
+                    if (responseStr.contains("success\":true")) {
+                        Toast.makeText(this, "Cliente añadido con éxito", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(this, "Error al añadir cliente", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+                conn.disconnect();
+            } catch (Exception e) {
+                e.printStackTrace();
+                runOnUiThread(() -> Toast.makeText(this, "Error de conexión", Toast.LENGTH_SHORT).show());
+            }
+        }).start();
+    }
+}
